@@ -31,13 +31,38 @@ where
     }
 
     let l = term(iter)?;
+    let ret = exp_tail(iter, l)?;
 
-    Ok(l)
+    Ok(ret)
 }
 
-#[allow(unused)]
-fn exp_tail() {
-    unimplemented!();
+fn exp_tail<I>(iter: &mut Peekable<I>, l: i32) -> Result<i32, ParseError>
+where
+    I: Iterator<Item = (String, TokenTypes)>,
+{
+    if let Some((_, token_type)) = iter.peek() {
+        match token_type {
+            TokenTypes::OperatorAdd => {
+                iter.next();
+
+                let r = term(iter)?;
+                let ret = exp_tail(iter, l + r)?;
+
+                Ok(ret)
+            }
+            TokenTypes::OperatorSub => {
+                iter.next();
+
+                let r = term(iter)?;
+                let ret = exp_tail(iter, l - r)?;
+
+                Ok(ret)
+            }
+            _ => Ok(l),
+        }
+    } else {
+        Ok(l)
+    }
 }
 
 fn term<I>(iter: &mut Peekable<I>) -> Result<i32, ParseError>
@@ -60,9 +85,9 @@ where
                 iter.next();
 
                 let r = factor(iter)?;
-                let res = term_tail(iter, l * r)?;
+                let ret = term_tail(iter, l * r)?;
 
-                Ok(res)
+                Ok(ret)
             }
             TokenTypes::OperatorDiv => {
                 iter.next();
@@ -71,9 +96,9 @@ where
                 if r == 0 {
                     return Err(ParseError::ZeroDivide);
                 }
-                let res = term_tail(iter, l / r)?;
+                let ret = term_tail(iter, l / r)?;
 
-                Ok(res)
+                Ok(ret)
             }
             _ => Ok(l),
         }
@@ -120,8 +145,12 @@ where
 pub fn syntax_analysis(token_list: Vec<(String, TokenTypes)>) -> Result<(), ParseError> {
     let mut iter = token_list.into_iter().peekable();
 
-    let res = exp(&mut iter)?;
-    println!("{res}");
+    let ret = exp(&mut iter)?;
 
-    Ok(())
+    if iter.peek().is_none() {
+        println!("{ret}");
+        Ok(())
+    } else {
+        Err(ParseError::Syntax)
+    }
 }
