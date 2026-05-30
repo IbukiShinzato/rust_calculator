@@ -19,10 +19,13 @@ fn main() -> Result<(), Error> {
             break;
         }
 
-        let token_list = lex_analysis(buf.as_str())?;
-
-        match syntax_analysis(token_list) {
-            Ok(_) => continue,
+        match lex_analysis(buf.as_str()) {
+            Ok(token_list) => match syntax_analysis(token_list) {
+                Ok(_) => continue,
+                Err(e) => {
+                    eprintln!("{e}");
+                }
+            },
             Err(e) => {
                 eprintln!("{e}");
             }
