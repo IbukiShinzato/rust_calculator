@@ -1,5 +1,6 @@
-use crate::token::{LexError, TokenTypes};
 use std::iter::Peekable;
+
+use crate::token::{LexError, TokenTypes};
 
 fn is_white_space(c: char) -> bool {
     ['\t', ' '].contains(&c)

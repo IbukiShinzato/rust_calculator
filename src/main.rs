@@ -1,6 +1,7 @@
 use std::io::{Write, stdin, stdout};
 
 use rust_calculator::lex::lex_analysis;
+use rust_calculator::syntax::syntax_analysis;
 
 type Error = Box<dyn std::error::Error>;
 
@@ -18,13 +19,14 @@ fn main() -> Result<(), Error> {
             break;
         }
 
-        let list = lex_analysis(buf.as_str())?;
+        let token_list = lex_analysis(buf.as_str())?;
 
-        if cfg!(debug_assertions) && !list.is_empty() {
-            rust_calculator::token::show_token_list(&list);
+        match syntax_analysis(token_list) {
+            Ok(_) => continue,
+            Err(e) => {
+                eprintln!("{e}");
+            }
         }
-
-        // syntax_analysis();
     }
 
     Ok(())
